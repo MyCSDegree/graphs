@@ -1,0 +1,250 @@
+<html>
+  <head>
+    <script type="text/javascript" src="zepto.min.js"></script>
+  </head>
+  <body style="width: 90%; height: 90%;">
+    <div id="meep" style="width: 100%; height: 20%;"></div>
+    <div id="cchart1" style="width: 100%; height: 120%;"></div>
+    <div id="cchart2" style="width: 100%; height: 120%;"></div>
+    <div id="cchart3" style="width: 100%; height: 120%;"></div>
+
+
+    <script type="text/javascript">
+function sleep(milliseconds) {
+  var start = new Date().getTime();
+  for (var i = 0; i < 1e7; i++) {
+    if ((new Date().getTime() - start) > milliseconds){
+      break;
+    }
+  }
+}
+
+      var getUrlParameter = function getUrlParameter(sParam) {
+        var sPageURL = decodeURIComponent(window.location.search.substring(1)),
+          sURLVariables = sPageURL.split('&'),
+          sParameterName,
+          i;
+
+        for (i = 0; i < sURLVariables.length; i++) {
+          sParameterName = sURLVariables[i].split('=');
+
+          if (sParameterName[0] === sParam) {
+            return sParameterName[1] === undefined ? true : sParameterName[1];
+          }
+        }
+      };
+      $u = 'http://mysrm.azurewebsites.net/api/student/getStudentStatus.php?regno=';
+      $b = $("#meep");
+      window.$d = {}
+      window.$c = 0;
+      $b.html("getting parameter...");
+      $param = getUrlParameter('regno');
+      if ($param == undefined) {
+        window.location = 'https://www.google.com';
+      }
+      $param = $param.replace(/\//g, ""); // remove tat space
+
+      $nos = $param.split(',');
+      window.$nos = $nos;
+
+      $b.html("checking roll nos: ");
+      $.each($nos, function($i, $e) {
+        $b.html("checking roll " + $e + ':');
+        var pattern = "^(RA1[4,5][0-9]{11})|^([0-9]{10})$";
+        // go to google
+        $re = $e.match(pattern);
+        if ($re == null) {
+          window.location = 'https://www.google.com';
+        } else {
+          $b.append('ok');
+        }
+      });
+
+      window.cb = function() {
+        //console.log(window.$d);
+<!--
+/*
+      function drawChart() {
+        var data = google.visualization.arrayToDataTable([
+          ['Year', 'Sales', 'Expenses'],
+          ['2004',  1000,      400],
+          ['2005',  1170,      460],
+          ['2006',  660,       1120],
+          ['2007',  1030,      540]
+        ]);
+*/
+-->
+        var ct1 = [];
+        $.each(window.$d, function ($i, $e) {
+          $nos = window.$nos;
+          if ($e[$nos[0]]['ct1'] == '-') {
+            return;
+          }
+
+          marks = [$i];
+          for (var j = 0; j < $nos.length; j = j + 1) {
+            marks.push(   parseInt($e[$nos[j]]['ct1'])  );
+          }
+          ct1.push(marks);
+        });
+
+        var ct2 = [];
+        $.each(window.$d, function ($i, $e) {
+          $nos = window.$nos;
+          if ($e[$nos[0]]['ct2'] == '-') {
+            return;
+          }
+
+          marks = [$i];
+          for (var j = 0; j < $nos.length; j = j + 1) {
+            marks.push(   parseInt($e[$nos[j]]['ct2'])  );
+          }
+          ct2.push(marks);
+        });
+
+        var attd = [];
+        $.each(window.$d, function ($i, $e) {
+          $nos = window.$nos;
+          //if ($e[$nos[0]]['ct2'] == '-') {
+          //  return;
+          //}
+
+          m = [$i];
+          for (var j = 0; j < $nos.length; j = j + 1) {
+            topush = parseFloat(  $e[$nos[j]]['attendance'] );
+            console.log(topush);
+            m.push( topush   );
+          }
+          attd.push(m);
+        });
+
+        //console.log(ct1);
+        ct1head = ['code'];
+        for (var j = 0; j < $nos.length; j = j + 1) {
+          ct1head.push(window.$n[window.$nos[j]]);
+        }
+
+        ct1graf = [ct1head].concat(ct1);
+        ct2graf = [ct1head].concat(ct2);
+        attdgraf = [ct1head].concat(attd);
+
+        console.log(ct1graf);
+
+        var data = google.visualization.arrayToDataTable(ct1graf);
+        var data2 = google.visualization.arrayToDataTable(ct2graf);
+        var data3 = google.visualization.arrayToDataTable(attdgraf);
+        var options = {
+          title: 'comparison - ct1',
+          curveType: 'function',
+          legend: { position: 'bottom' }
+        };
+
+
+        var options2 = {
+          title: 'comparison - ct2',
+          curveType: 'function',
+          legend: { position: 'bottom' }
+        };
+
+        var options3 = {
+          title: 'comparison - attd',
+          curveType: 'function',
+          legend: { position: 'bottom' }
+        };
+
+        var chart = new google.visualization.LineChart(document.getElementById('cchart1'));
+
+        var chart2 = new google.visualization.LineChart(document.getElementById('cchart2'));
+
+        var chart3 = new google.visualization.LineChart(document.getElementById('cchart3'));
+
+        chart.draw(data, options);
+        chart2.draw(data2, options2);
+        chart3.draw(data3, options3);
+      }; //window.cb'
+
+      var s_cb = function (response) {
+        window.$c = window.$c + 1;
+        console.log(window.$c);
+
+        var r = response;
+
+        if (window.$n == undefined) {
+          window.$n = {};
+        }
+
+        window.$n[r.regno] = r.name;
+
+        id = r.regno;
+        //console.log(r.name);
+
+        s = r.stat;
+
+        $.each(s, function($i, $e) {
+          //console.log($e);
+          if (window.$d[$i] == undefined) {
+            window.$d[$i] = {}
+          }
+          window.$d[$i][id] = $e;
+        });
+
+        if (window.$c == window.$nos.length) {
+          window.cb();
+        }
+      }
+
+      var e_cb = function (xhr, type) {
+        alert("smthg went wrong!");
+        window.location = 'https://www.google.com';
+      }
+
+      $.each($nos, function($i, $e) {
+        $url = $u + $e;
+        //console.log($url);
+        $b.html('adding ajax for ' + $e);
+        $.ajax({
+          type: 'GET',
+          url: $url,
+          data: { get_cb: true },
+          dataType: 'json',
+          success: s_cb,
+          error: e_cb,
+        }); // ajax
+      });
+
+    </script>
+    <script type="text/javascript"
+      src="https://www.google.com/jsapi?autoload={
+        'modules':[{
+          'name':'visualization',
+          'version':'1',
+          'packages':['corechart']
+        }]
+      }"></script>
+<!--
+    <script type="text/javascript">
+      //google.setOnLoadCallback(drawChart);
+
+      function drawChart() {
+        var data = google.visualization.arrayToDataTable([
+          ['Year', 'Sales', 'Expenses'],
+          ['2004',  1000,      400],
+          ['2005',  1170,      460],
+          ['2006',  660,       1120],
+          ['2007',  1030,      540]
+        ]);
+
+        var options = {
+          title: 'Company Performance',
+          curveType: 'function',
+          legend: { position: 'bottom' }
+        };
+
+        var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
+
+        chart.draw(data, options);
+      }
+    </script>
+-->
+  </body>
+</html>
